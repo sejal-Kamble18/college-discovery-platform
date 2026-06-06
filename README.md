@@ -28,6 +28,7 @@ EduDiscover is a full-stack college discovery platform designed to simplify the 
 The platform centralizes information that is typically scattered across multiple college websites and portals. Students can search colleges, compare institutions, explore courses, evaluate placements, save colleges, and participate in community discussions from a single platform.
 
 The project focuses on scalability, performance, accessibility, responsive design, and modern frontend engineering practices.
+The platform architecture is designed to support verified college datasets and can be integrated with official education data sources.
 
 ---
 
