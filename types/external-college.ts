@@ -22,4 +22,5 @@ export interface ExternalCollegeSearchResponse {
   providerConfigured: boolean;
   source: ExternalCollege["source"] | "mixed";
   message?: string;
+  nextCursor?: string;
 }

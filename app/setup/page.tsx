@@ -11,7 +11,7 @@ const firebaseValues = [
 
 export const metadata = {
   title: "Deployment Setup",
-  description: "Configure Firebase and optional live college data for EduDiscover.",
+  description: "Configure Firebase, college data, and Stripe billing for EduDiscover.",
 };
 
 export default function SetupPage() {
@@ -46,6 +46,14 @@ export default function SetupPage() {
           <p className="mt-3 leading-7 text-slate-600">
             Basic live results use attributed Wikipedia summaries and require no key. For richer address, phone, rating, website, and map details, enable Places API (New) in Google Cloud and add a server-only <code className="rounded bg-slate-100 px-1.5 py-0.5">GOOGLE_PLACES_API_KEY</code>. Never prefix that key with <code className="rounded bg-slate-100 px-1.5 py-0.5">NEXT_PUBLIC_</code>.
           </p>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-2xl font-bold text-slate-900">Pro subscriptions</h2>
+          <p className="mt-3 leading-7 text-slate-600">
+            Stripe billing also requires Firebase Admin credentials, <code className="rounded bg-slate-100 px-1.5 py-0.5">APP_URL</code>, a recurring Stripe Price, a secret API key, and a webhook secret. Register <code className="rounded bg-slate-100 px-1.5 py-0.5">/api/billing/webhook</code> in Stripe before enabling the Upgrade button. Full steps are in the README.
+          </p>
+          <Link href="/pricing" className="mt-4 inline-flex font-bold text-brand-700 hover:underline">Open pricing setup →</Link>
         </section>
 
         <div className="mt-8 flex flex-wrap gap-3">

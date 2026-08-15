@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { INDIAN_STATES } from "@/constants/filters";
 import { EXAM_CONFIG, predictColleges } from "@/lib/predictor/engine";
 import { checkRateLimit } from "@/lib/server/rate-limit";
+import { isProUser } from "@/lib/server/billing";
+import { requireServerUser, ServerAuthError } from "@/lib/server/firebase-admin";
 import type { PredictionRequest, ReservationCategory, SupportedExam } from "@/types";
 
 const CATEGORIES: ReservationCategory[] = ["general", "obc", "sc", "st", "ews"];
@@ -67,6 +69,24 @@ export async function POST(request: Request) {
     page,
     pageSize,
   };
+
+  const usesPremiumFilters = Boolean(
+    predictionRequest.state || predictionRequest.course || predictionRequest.quota || predictionRequest.year,
+  );
+  if (usesPremiumFilters) {
+    try {
+      const user = await requireServerUser(request);
+      if (!(await isProUser(user.uid))) {
+        return NextResponse.json({ error: "Advanced predictor filters require an active Pro subscription." }, { status: 403 });
+      }
+    } catch (error) {
+      if (error instanceof ServerAuthError) {
+        return NextResponse.json({ error: error.message }, { status: error.status });
+      }
+      if (process.env.NODE_ENV !== "production") console.error("Premium access check failed:", error);
+      return NextResponse.json({ error: "Premium access could not be verified." }, { status: 503 });
+    }
+  }
 
   try {
     return NextResponse.json(await predictColleges(predictionRequest), {

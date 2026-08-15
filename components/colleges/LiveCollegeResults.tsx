@@ -28,7 +28,9 @@ export function LiveCollegeResults({ query, state, excludeNames = [] }: LiveColl
     key: string;
     results: ExternalCollege[];
     message: string;
+    nextCursor?: string;
   }>({ key: "", results: [], message: "" });
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (!shouldSearch) return;
@@ -44,7 +46,7 @@ export function LiveCollegeResults({ query, state, excludeNames = [] }: LiveColl
       .then(async (apiResponse) => {
         const data = (await apiResponse.json()) as ExternalCollegeSearchResponse & { error?: string };
         if (!apiResponse.ok) throw new Error(data.error || "Live search failed.");
-        setResponse({ key: requestKey, results: data.results, message: data.message || "" });
+        setResponse({ key: requestKey, results: data.results, message: data.message || "", nextCursor: data.nextCursor });
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
@@ -62,6 +64,37 @@ export function LiveCollegeResults({ query, state, excludeNames = [] }: LiveColl
   const loading = shouldSearch && response.key !== requestKey;
   const results = loading ? [] : response.results.filter((college) => !excluded.has(normalizedName(college.name)));
 
+  async function loadMore() {
+    if (!response.nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const params = new URLSearchParams();
+      if (normalizedQuery) params.set("q", normalizedQuery);
+      if (state) params.set("state", state);
+      params.set("cursor", response.nextCursor);
+      const apiResponse = await fetch(`/api/colleges/search?${params.toString()}`, { cache: "no-store" });
+      const data = (await apiResponse.json()) as ExternalCollegeSearchResponse & { error?: string };
+      if (!apiResponse.ok) throw new Error(data.error || "More results could not be loaded.");
+      setResponse((current) => {
+        const unique = new Map(current.results.map((college) => [normalizedName(college.name), college]));
+        for (const college of data.results) unique.set(normalizedName(college.name), college);
+        return {
+          key: requestKey,
+          results: [...unique.values()],
+          message: data.message || current.message,
+          nextCursor: data.nextCursor,
+        };
+      });
+    } catch (error) {
+      setResponse((current) => ({
+        ...current,
+        message: error instanceof Error ? error.message : "More results could not be loaded.",
+      }));
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   if (!shouldSearch) return null;
 
   return (
@@ -73,7 +106,7 @@ export function LiveCollegeResults({ query, state, excludeNames = [] }: LiveColl
             {state ? `Institutions in ${state}` : "Institutions matching your search"}
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            These results are fetched when you search and are not saved to Firebase. Open the source profile, then confirm admissions on the institution website.
+            Your search is not saved. AISHE entries are read from the imported Firestore directory; public-provider matches are fetched live. Confirm admissions on the institution website.
           </p>
         </div>
         {!loading && <span className="w-fit rounded-full bg-white px-3 py-1.5 text-sm font-bold text-slate-700 shadow-sm">{results.length} live matches</span>}
@@ -130,6 +163,13 @@ export function LiveCollegeResults({ query, state, excludeNames = [] }: LiveColl
             ))}
           </div>
         </>
+      )}
+      {!loading && response.nextCursor && (
+        <div className="mt-6 text-center">
+          <button type="button" disabled={loadingMore} onClick={() => void loadMore()} className="rounded-xl bg-slate-950 px-6 py-3 text-sm font-bold text-white hover:bg-slate-800 disabled:cursor-wait disabled:opacity-50">
+            {loadingMore ? "Loading more institutions…" : "Load more institutions"}
+          </button>
+        </div>
       )}
     </section>
   );

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { logoutUser } from "@/lib/auth";
 import { isFirebaseReady } from "@/lib/firebase";
+import { useSubscription } from "@/lib/hooks/useSubscription";
 
 export function AuthMenu() {
   const { user, loading } = useAuth();
+  const { isPro } = useSubscription();
   const router = useRouter();
 
   if (loading) return <div className="h-9 w-24 animate-pulse rounded-lg bg-slate-100" />;
@@ -20,6 +22,7 @@ export function AuthMenu() {
 
   return (
     <div className="flex items-center gap-3">
+      {isPro && <Link href="/pricing" className="rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-violet-700">Pro</Link>}
       <span className="hidden max-w-36 truncate text-sm font-semibold text-slate-700 sm:block">{user.displayName || user.email}</span>
       <button
         type="button"
