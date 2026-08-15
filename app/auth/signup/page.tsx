@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { loginWithGoogle, signupWithEmail } from '@/lib/auth';
+import { formatAuthError } from '@/lib/auth-errors';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -60,7 +61,7 @@ export default function SignupPage() {
       router.push('/');
       router.refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message.replace('Firebase: ', '') : 'Signup failed. Please try again.');
+      setError(formatAuthError(error, window.location.hostname));
     } finally {
       setLoading(false);
     }
@@ -80,7 +81,7 @@ export default function SignupPage() {
           {/* Form */}
           <div className="px-8 py-10">
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg" role="alert" aria-live="polite">
                 <p className="text-red-800 text-sm font-medium">{error}</p>
               </div>
             )}
@@ -215,7 +216,7 @@ export default function SignupPage() {
                     router.push('/');
                     router.refresh();
                   } catch (signupError) {
-                    setError(signupError instanceof Error ? signupError.message.replace('Firebase: ', '') : 'Google signup failed. Please try again.');
+                    setError(formatAuthError(signupError, window.location.hostname));
                   } finally {
                     setLoading(false);
                   }
@@ -228,9 +229,13 @@ export default function SignupPage() {
                   <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                Google
+                Continue with Google
               </button>
             </div>
+
+            <p className="mb-6 text-center text-sm leading-6 text-slate-500">
+              No payment details are required. Your account is used only for saved colleges and community features.
+            </p>
 
             {/* Sign In Link */}
             <p className="text-center text-slate-600 text-sm">

@@ -18,12 +18,19 @@ const requiredValues = [
   firebaseConfig.appId,
 ];
 
-export const firebaseConfigurationMessage =
-  "Firebase is not configured for this deployment. Add the NEXT_PUBLIC_FIREBASE_* values from Firebase Console and restart the app.";
+const missingConfigurationMessage =
+  "Firebase is not configured for this deployment. Add the NEXT_PUBLIC_FIREBASE_* values from the same Firebase Web app and restart or redeploy the app.";
+
+function isUsableConfigurationValue(value: string | undefined) {
+  if (typeof value !== "string" || value.trim().length === 0) return false;
+  return !/^(your_|replace|example|changeme|xxx)/i.test(value.trim());
+}
 
 export const isFirebaseConfigured = requiredValues.every(
-  (value) => typeof value === "string" && value.trim().length > 0,
+  isUsableConfigurationValue,
 );
+
+export let firebaseConfigurationMessage = missingConfigurationMessage;
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
@@ -35,6 +42,8 @@ if (isFirebaseConfigured) {
     auth = getAuth(app);
     db = getFirestore(app);
   } catch (error) {
+    firebaseConfigurationMessage =
+      "Firebase could not initialize. Confirm that every NEXT_PUBLIC_FIREBASE_* value comes from the same Firebase Web app, then redeploy.";
     if (process.env.NODE_ENV !== "production") {
       console.error(firebaseConfigurationMessage, error);
     }

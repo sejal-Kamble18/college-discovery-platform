@@ -12,6 +12,7 @@ import {
 import { upsertUserProfile } from "@/lib/firestore/users";
 
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: "select_account" });
 
 function requireAuth() {
   if (!auth) throw new Error(firebaseConfigurationMessage);
@@ -20,7 +21,7 @@ function requireAuth() {
 
 export async function loginWithGoogle() {
   const result = await signInWithPopup(requireAuth(), googleProvider);
-  await upsertUserProfile(result.user, getAdditionalUserInfo(result)?.isNewUser ?? false);
+  await syncUserProfile(result.user, getAdditionalUserInfo(result)?.isNewUser ?? false);
   return result;
 }
 
@@ -28,11 +29,13 @@ export async function loginWithEmail(
   email: string,
   password: string
 ) {
-  return signInWithEmailAndPassword(
+  const result = await signInWithEmailAndPassword(
     requireAuth(),
     email,
     password
   );
+  await syncUserProfile(result.user);
+  return result;
 }
 
 export async function signupWithEmail(
@@ -48,10 +51,12 @@ export async function signupWithEmail(
 
   const currentAuth = requireAuth();
   if (currentAuth.currentUser) {
-    await updateProfile(currentAuth.currentUser, {
-      displayName: name,
-    });
-    await upsertUserProfile(currentAuth.currentUser, true);
+    try {
+      await updateProfile(currentAuth.currentUser, { displayName: name });
+    } catch (error) {
+      console.warn("The account was created, but its display name could not be updated.", error);
+    }
+    await syncUserProfile(currentAuth.currentUser, true);
   }
 
   return result;
@@ -63,4 +68,17 @@ export async function logoutUser() {
 
 export async function requestPasswordReset(email: string) {
   return sendPasswordResetEmail(requireAuth(), email);
+}
+
+async function syncUserProfile(user: Parameters<typeof upsertUserProfile>[0], isNew = false) {
+  try {
+    await upsertUserProfile(user, isNew);
+    return true;
+  } catch (error) {
+    // Authentication is the source of truth for the session. A temporary
+    // Firestore/rules problem must not turn a successful sign-in into a
+    // misleading OAuth failure for the user.
+    console.warn("Signed in, but the Firestore user profile could not be synchronized.", error);
+    return false;
+  }
 }

@@ -102,10 +102,20 @@ NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
 COLLEGE_QUERY_SCAN_LIMIT=250
 ```
 
-5. In **Authentication → Sign-in method**, enable **Email/Password** and **Google**.
-6. In **Authentication → Settings → Authorized domains**, add `localhost` and every deployed domain.
+5. In **Authentication → Sign-in method**, enable **Email/Password** and **Google**, then select a project support email.
+6. In **Authentication → Settings → Authorized domains**, add `localhost`, the production domain, and one stable staging domain. Avoid depending on changing per-commit preview hostnames for OAuth testing.
 7. In **Firestore Database**, create the database in production mode and choose the appropriate region.
 8. Restart `npm run dev`; Next.js reads environment variables only when the server starts.
+
+If Google opens successfully but the app still reports a failure, deploy `firestore.rules` and confirm the signed-in user can write `/users/{uid}`. The app keeps a valid Firebase Authentication session even when profile synchronization is temporarily unavailable, and logs the profile-sync problem separately.
+
+Common errors are shown with deployment-specific guidance:
+
+- `auth/unauthorized-domain`: add the exact browser hostname to Firebase Authorized domains;
+- `auth/operation-not-allowed`: enable the requested provider in the same Firebase project;
+- `auth/invalid-api-key`: replace mismatched or placeholder Web app environment values;
+- `auth/popup-blocked`: allow pop-ups for the deployment and retry; and
+- `auth/account-exists-with-different-credential`: sign in with the existing method first.
 
 Firebase web configuration is used by the browser and is not an admin credential. Security depends on Firestore rules. Still keep environment files out of Git and restrict the Google Cloud API key to the APIs this project needs.
 
@@ -160,6 +170,10 @@ GET /api/colleges/search?q=college%20name
 ```
 
 Queries must be 3–100 characters. Provider errors are converted to safe public messages, requests time out, and responses are not stored by the app.
+
+### College image reliability
+
+College websites frequently block hotlinking or move logo files. All college image surfaces therefore use a controlled local fallback with institution initials and category artwork. Remote media is treated as optional enhancement data, never as required layout content. For verified production photography, upload licensed assets to an operator-controlled storage bucket or CDN and store that stable URL in the college record; do not add arbitrary third-party domains to `next.config.ts`.
 
 ## 6. Predictor API
 
@@ -237,10 +251,10 @@ Current automated tests cover deterministic rank prediction and cutoff-boundary 
 For Vercel:
 
 1. Import this GitHub repository into Vercel.
-2. Add all Firebase variables to Development, Preview, and Production as appropriate.
+2. Add all Firebase variables to Development, Preview, and Production as appropriate. Every value in one environment must come from the same Firebase Web app.
 3. Optionally add the server-only Google Places key.
 4. Deploy Firestore rules separately with Firebase CLI.
-5. Add the final Vercel/custom domains to Firebase Authorized domains.
+5. Add the final production domain and a stable staging domain to Firebase Authorized domains.
 6. Test signup, Google sign-in, password reset, save/remove, discussion posting, search, predictor, and mobile navigation on the deployed URL.
 
 No payment provider or commerce environment variables are required.

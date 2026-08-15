@@ -31,7 +31,9 @@ export default function SetupPage() {
             <li>Under Your apps, create or select a Web app and copy its configuration values.</li>
             <li>Copy <code className="rounded bg-slate-100 px-1.5 py-0.5">.env.example</code> to <code className="rounded bg-slate-100 px-1.5 py-0.5">.env.local</code>.</li>
             <li>Paste the exact values below. Do not use placeholder text, quotes, or a service-account private key.</li>
-            <li>In Authentication, enable Email/Password and Google. Add your deployed domain to Authorized domains.</li>
+            <li>In Authentication, enable Email/Password and Google and select a support email.</li>
+            <li>Add localhost, the production hostname, and one stable staging hostname to Authentication → Settings → Authorized domains.</li>
+            <li>In Vercel, add the complete configuration to both Preview and Production. Keep every value in an environment from the same Firebase Web app.</li>
             <li>Restart the Next.js development server after changing environment variables.</li>
           </ol>
           <div className="mt-6 rounded-xl bg-slate-950 p-5 font-mono text-xs leading-6 text-slate-200 sm:text-sm">

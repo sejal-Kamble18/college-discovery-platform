@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useCompareStore } from '@/lib/store/useCompareStore';
 import { formatFees, formatRating, formatRank } from '@/lib/utils/format';
+import { CollegeMedia } from '@/components/media/CollegeMedia';
 
 export default function ComparePage() {
   const { selectedColleges, removeCollege, clearCompare } = useCompareStore();
@@ -77,13 +77,14 @@ export default function ComparePage() {
                 <div key={college?.id || idx} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
                   {/* Card Header */}
                   <div className="relative h-32 w-full bg-gradient-to-br from-slate-100 to-slate-200">
-                    {college?.imageUrl && (
-                      <Image
+                    {college && (
+                      <CollegeMedia
                         src={college.imageUrl}
-                        alt={college.name}
-                        fill
-                        unoptimized
-                        className="object-cover"
+                        alt={college.isVerified ? `${college.name} campus` : ''}
+                        shortName={college.shortName}
+                        category={college.category}
+                        variant="cover"
+                        className="h-full w-full"
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
@@ -104,16 +105,14 @@ export default function ComparePage() {
                       <>
                         {/* Logo & Name */}
                         <div className="flex items-start gap-3 mb-5">
-                          <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
-                            <Image
+                          <CollegeMedia
                               src={college.logoUrl}
-                              alt={college.shortName}
-                              width={40}
-                              height={40}
-                              unoptimized
-                              className="object-contain"
-                            />
-                          </div>
+                              alt={`${college.shortName} logo`}
+                              shortName={college.shortName}
+                              category={college.category}
+                              variant="logo"
+                              className="h-12 w-12 flex-shrink-0 rounded-lg border border-slate-200 bg-white"
+                          />
                           <div>
                             <h3 className="font-bold text-slate-900 text-lg leading-tight">{college.name}</h3>
                             <p className="text-sm text-slate-500 mt-0.5">{college.location.city}, {college.location.state}</p>

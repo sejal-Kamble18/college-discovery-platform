@@ -39,8 +39,9 @@ export default async function CollegeDetailPage({
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         {!college.isVerified && (
-          <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
-            <strong>Reference profile:</strong> this record has not yet completed the project&rsquo;s source-verification workflow. Confirm fees, cutoffs, seats, placements, rankings, and deadlines on the institution and official counselling websites.
+          <div className="mb-8 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+            <span className="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-amber-100 font-black" aria-hidden="true">i</span>
+            <p><strong>Reference data.</strong> Fees, cutoffs, seats, placements, and deadlines can change. Confirm them on the institution and official counselling websites before applying.</p>
           </div>
         )}
         <div className="flex flex-col lg:flex-row gap-8">

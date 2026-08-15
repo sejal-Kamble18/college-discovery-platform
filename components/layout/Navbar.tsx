@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: "/colleges", label: "Colleges" },
   { href: "/predictor", label: "Predictor" },
   { href: "/compare", label: "Compare" },
-  { href: "/discussions", label: "Q&A" },
+  { href: "/discussions", label: "Community" },
   { href: "/saved", label: "Saved" },
 ];
 

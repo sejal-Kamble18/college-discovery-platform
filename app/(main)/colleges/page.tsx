@@ -67,7 +67,7 @@ export default async function CollegesPage({
           Explore Colleges
         </h1>
         <p className="text-slate-600 mb-6 text-lg max-w-3xl leading-relaxed">
-          Browse {total > 0 ? `${total} loaded` : 'the available'} reference profiles, then use live search for more institutions across India. Verify academic facts before making a decision.
+          Search curated reference profiles and live public sources across India. Every result is labelled so you know what to verify before applying.
         </p>
         <div className="max-w-2xl">
           <CollegeSearchBar />
@@ -82,12 +82,15 @@ export default async function CollegesPage({
 
         {/* Main Content Area */}
         <div className="flex-1 min-w-0 pb-20">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900 bg-white px-4 py-2 border border-slate-200 rounded-lg shadow-sm">
-              Showing {colleges.length} {colleges.length === 1 ? 'Result' : 'Results'}
+          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">EduDiscover directory</p>
+              <h2 className="mt-1 text-xl font-extrabold text-slate-900">
+              {total} curated {total === 1 ? 'profile' : 'profiles'}
               {query && <span className="text-slate-500 font-normal"> for &quot;{query}&quot;</span>}
-            </h2>
-            {/* Optional Sorting Dropdown can go here in future iterations */}
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-slate-500">Showing {colleges.length} on this page</p>
           </div>
           
           <CollegeGrid colleges={colleges} />
