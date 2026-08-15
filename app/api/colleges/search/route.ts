@@ -34,6 +34,7 @@ export async function GET(request: Request) {
   const searchParams = new URL(request.url).searchParams;
   const query = searchParams.get("q")?.trim() || "";
   const requestedState = searchParams.get("state")?.trim() || "";
+  const cursor = searchParams.get("cursor")?.trim() || undefined;
   const state = INDIAN_STATES.find((item) => item.toLowerCase() === requestedState.toLowerCase());
 
   if (requestedState && !state) {
@@ -42,14 +43,19 @@ export async function GET(request: Request) {
   if ((query.length > 0 && query.length < 2) || query.length > 100 || (!query && !state)) {
     return NextResponse.json({ error: "Enter at least two characters or select a state." }, { status: 400 });
   }
+  if (cursor && cursor.length > 1_000) {
+    return NextResponse.json({ error: "Directory cursor is invalid." }, { status: 400 });
+  }
 
-  const directoryPromise = searchFirestoreDirectory(query, state);
+  const directoryPromise = searchFirestoreDirectory(query, state, cursor);
   let publicResults: ExternalCollege[] = [];
   let providerError: unknown;
   let usedFallback = false;
 
   try {
-    if (isGooglePlacesConfigured()) {
+    if (cursor) {
+      publicResults = [];
+    } else if (isGooglePlacesConfigured()) {
       try {
         publicResults = await searchGoogleColleges(query, state);
       } catch (error) {
@@ -64,7 +70,8 @@ export async function GET(request: Request) {
     providerError = providerError || error;
   }
 
-  const directoryResults = await directoryPromise;
+  const directoryPage = await directoryPromise;
+  const directoryResults = directoryPage.results;
   const results = mergeResults(directoryResults, publicResults);
   if (results.length === 0 && providerError) {
     const status = providerError instanceof CollegeProviderError ? providerError.status : 502;
@@ -79,6 +86,7 @@ export async function GET(request: Request) {
     results,
     providerConfigured: true,
     source: sources.size > 1 ? "mixed" : results[0]?.source || "wikipedia",
+    nextCursor: directoryPage.nextCursor,
     message: directoryResults.length > 0
       ? "AISHE-backed directory matches are combined with public discovery results. Directory identity is not proof of current courses, fees or admission cutoffs."
       : usedFallback

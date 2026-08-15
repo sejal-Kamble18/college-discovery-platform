@@ -101,6 +101,17 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="bg-slate-950 py-14 text-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-blue-300">EduDiscover Pro</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">Turn cutoff results into an admission strategy.</h2>
+            <p className="mt-4 text-base leading-7 text-slate-300">Keep nationwide discovery free, then upgrade for advanced course, quota, state and year filters, saved predictor scenarios, and CSV exports.</p>
+          </div>
+          <Link href="/pricing" className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-white px-6 py-3 font-black text-slate-950 transition hover:bg-blue-50">View plans →</Link>
+        </div>
+      </section>
+
       {/* Featured Colleges Section */}
       <section className="py-20 md:py-28 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

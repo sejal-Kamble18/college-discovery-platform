@@ -1,64 +1,13 @@
 # EduDiscover
 
-EduDiscover is a no-payment college discovery and admission-planning SaaS foundation for India. It separates broad institution discovery from verified decision data so a visitor can find a real college without the product pretending that every result already has trustworthy fees or cutoffs.
+EduDiscover is an India-wide college discovery and admission-planning SaaS built with Next.js, Firebase and Stripe.
 
-> Admission notice: no software can predict admission with 100% certainty. Counselling results change by year, program, category, quota, round, seat availability and policy. The predictor provides deterministic planning bands and always requires official-source verification.
-
-## Product data model
-
-| Data lane | Firestore collection | Purpose | Saved when a visitor searches? |
-| --- | --- | --- | --- |
-| India-wide directory | `collegeDirectory` | AISHE-backed institution identity, state/UT, city/district and source | No |
-| Decision profiles | `colleges` | Curated fees, courses, exams, rankings, facilities and comparisons | No |
-| Admission evidence | `cutoffRecords` | Versioned exam/category/course/quota/round/year cutoff rows | No |
-| Private account data | `users/{uid}/savedColleges` | A signed-in visitor's shortlist | Only when the visitor presses Save |
-
-Public search combines an imported Firestore directory with attributed Wikipedia discovery. Google Places is an optional enrichment provider. External results are returned on demand and are never copied into a user's account.
-
-```mermaid
-flowchart TD
-  Search["College search"] --> Directory["AISHE Firestore directory"]
-  Search --> Public["Wikipedia or optional Places"]
-  Search --> Profiles["Curated decision profiles"]
-  Predictor["Predictor filters"] --> Cutoffs["Versioned cutoff records"]
-  Cutoffs --> Bands["Likely / possible / reach"]
-```
-
-## Current capabilities
-
-- College-name search and state/UT browsing with no image hotlinking
-- Public directory results clearly separated from full decision profiles
-- Filters for study area, institution type, exam, fees, rating and sort order
-- Firebase email/password, Google sign-in, password reset and private saved colleges
-- Comparison of up to three decision profiles
-- Versioned, paginated cutoff matching by exam, category, state, course, quota and year
-- Public questions with authenticated posting
-- Deny-by-default Firestore rules and admin-only catalog writes
-- No checkout, subscription, Stripe or payment flow
-
-The repository includes 19 reference profiles only as a safe local fallback. A production catalog becomes broad after an operator imports an official directory and verified cutoff datasets.
-
-## Technology
-
-- Next.js 16.2 App Router with React 19 and TypeScript
-- Tailwind CSS 4
-- Firebase Authentication and Cloud Firestore
-- Zustand for transient compare/recent state
-- Node test runner for predictor and security guardrails
-
-## 1. Clone and validate
+## Quick start
 
 ```bash
 git clone https://github.com/sejal-Kamble18/college-discovery-platform.git
 cd college-discovery-platform
-git checkout -b feat/your-feature
 npm ci
-npm run check
-```
-
-For local development:
-
-```bash
 cp .env.example .env.local
 npm run dev
 ```
@@ -66,59 +15,88 @@ npm run dev
 PowerShell:
 
 ```powershell
+git clone https://github.com/sejal-Kamble18/college-discovery-platform.git
+Set-Location college-discovery-platform
+npm ci
 Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`. Public reference profiles and Wikipedia discovery work without Firebase. Firebase is required for Google login, saved colleges, Firestore directory records and verified cutoff records.
+Open `http://localhost:3000`.
 
-## 2. Configure Firebase and Google login
+## What is included
 
-`auth/invalid-api-key` means the Firebase Web app values are missing, placeholder text, or copied from different projects.
+- Search by institution name or state/UT
+- Cursor-paginated Firestore directory plus Wikipedia discovery fallback
+- Curated college profiles, comparison and private saved lists
+- Firebase email/password and Google authentication
+- Deterministic cutoff predictor with Likely, Possible and Reach bands
+- Pro-only advanced predictor filters, saved scenarios and CSV exports
+- Stripe Checkout, signed webhooks and customer billing portal
+- Image-free cards and profiles, so third-party image failures cannot break the UI
+- No generated “10,000 college” dataset
 
-1. Create or select a project in [Firebase Console](https://console.firebase.google.com/).
-2. Open **Project settings → General → Your apps** and register a Web app.
-3. Copy the complete Web app configuration into `.env.local`:
+> The predictor is a planning tool, not an admission guarantee. Results change by course, category, quota, counselling round, year and seat availability.
+
+## Why the website initially shows only a few profiles
+
+The repository contains 19 reference profiles so the app works locally. Nationwide coverage comes from importing an official directory into Firestore.
+
+Use the official [AISHE institution directory](https://dashboard.aishe.gov.in/) or [AISHE report exports](https://aishe.gov.in/). AISHE is the broad discovery dataset; it does not automatically prove recognition or provide current course fees and cutoffs.
+
+The app uses three separate collections:
+
+| Collection | Purpose |
+| --- | --- |
+| `collegeDirectory` | India-wide institution names, state/UT, location and source |
+| `colleges` | Reviewed decision profiles with courses, fees and rankings |
+| `cutoffRecords` | Source-versioned exam/category/course/quota/round/year cutoffs |
+
+Wikipedia and optional Google Places results are shown live but are not silently promoted to verified decision data.
+
+## Firebase setup
+
+Create a Firebase Web app and place its values in `.env.local`:
 
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=AIza...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
-NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
-COLLEGE_QUERY_SCAN_LIMIT=250
-PREDICTOR_QUERY_LIMIT=500
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
 ```
 
-4. In **Authentication → Sign-in method**, enable **Email/Password** and **Google**, and select a support email.
-5. In **Authentication → Settings → Authorized domains**, add `localhost`, the production hostname and one stable staging hostname.
-6. Create Cloud Firestore in production mode.
-7. Restart the development server after changing environment values.
+Then:
 
-If Google authentication succeeds but profile synchronization fails, deploy the included Firestore rules and confirm that the signed-in user can create `users/{uid}`. Authentication remains the source of truth; a temporary profile-write failure is logged separately instead of being reported as a false OAuth failure.
+1. Enable Email/Password and Google in **Authentication → Sign-in method**.
+2. Add `localhost`, staging and production hostnames to **Authorized domains**.
+3. Create Cloud Firestore.
+4. Add server Admin SDK credentials for billing APIs:
 
-## 3. Deploy Firestore rules and indexes
+```env
+FIREBASE_ADMIN_PROJECT_ID=
+FIREBASE_ADMIN_CLIENT_EMAIL=
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+Deploy the rules and indexes:
 
 ```bash
 npx firebase-tools login
 npx firebase-tools use --add
-npx firebase-tools deploy --only firestore:rules,firestore:indexes
+npm run firebase:deploy
 ```
 
-The rules allow public reads of directory, profile, cutoff and discussion content; user-owned access to private account data; and admin-only writes to public catalog collections.
+## Import the India-wide directory
 
-## 4. Load a real India-wide college directory
-
-Use an official source such as the [AISHE institution directory/dashboard](https://dashboard.aishe.gov.in/) or an official [AISHE final report export](https://aishe.gov.in/aishe-final-report/). Do not fabricate thousands of records with an AI model.
-
-The importer accepts normalized UTF-8 CSV or JSON. Recommended CSV columns are:
+Normalize the official AISHE export to UTF-8 CSV or JSON. Recommended columns:
 
 ```csv
 aisheCode,name,state,district,city,type,management,website,sourceUrl,sourceAuthority,sourceYear
 ```
 
-Required values are `name`, `state`, `sourceUrl` and `sourceYear`. `sourceUrl`, `sourceAuthority` and `sourceYear` may instead be supplied once through environment variables. Convert the official spreadsheet to the normalized columns, review duplicate/closed institutions, then run:
+Bash:
 
 ```bash
 DIRECTORY_DATA_PATH=./data/aishe-directory.csv \
@@ -140,49 +118,11 @@ $env:CONFIRM_DIRECTORY_IMPORT="verified"
 npm run import:directory
 ```
 
-The script validates states/UTs and provenance, generates prefix search tokens, rejects duplicate IDs, and imports in batches of 400. Searches query `collegeDirectory` by name token and/or state, then merge the results with public discovery. The search response is not persisted again.
+The import runs in batches, validates states and source fields, rejects duplicate IDs and creates prefix search tokens. Keep `serviceAccountKey.json` outside Git.
 
-## 5. Curated decision profiles
+## Import verified cutoffs
 
-The directory answers “does this institution exist and where is it?” Full cards and comparisons require audited `colleges` documents. Set `COLLEGE_DATA_PATH` to a reviewed JSON array matching `types/college.ts`, keep `serviceAccountKey.json` outside Git, then run:
-
-```bash
-COLLEGE_DATA_PATH=./data/verified-colleges.json \
-CONFIRM_COLLEGE_IMPORT=verified \
-npm run import:colleges
-```
-
-Verify every fee, ranking, program, placement, seat and date against its responsible official authority. `isVerified` should remain false until the complete displayed profile has passed review.
-
-## 6. Versioned predictor dataset
-
-Each `cutoffRecords` document represents one exam/category/course/quota/round/year boundary:
-
-```json
-{
-  "id": "iitb-cse-jee-advanced-general-ai-r1-2025",
-  "collegeId": "iit-bombay",
-  "collegeSlug": "iit-bombay",
-  "collegeName": "Indian Institute of Technology Bombay",
-  "shortName": "IIT Bombay",
-  "city": "Mumbai",
-  "state": "Maharashtra",
-  "exam": "JEE Advanced",
-  "category": "general",
-  "mode": "rank",
-  "cutoff": 68,
-  "year": 2025,
-  "courseName": "Computer Science and Engineering",
-  "round": "Round 1",
-  "quota": "All India",
-  "sourceAuthority": "JoSAA",
-  "sourceUrl": "https://example.gov.in/official-cutoff-page",
-  "datasetVersion": "josaa-2025-r1",
-  "isVerified": true
-}
-```
-
-Use the actual official counselling URL in place of the example. The importer refuses records without a source, dataset version or `isVerified: true`:
+Prepare a JSON array containing one record per exam, category, course, quota, round and year. Each row must include `sourceAuthority`, `sourceUrl`, `datasetVersion` and `isVerified: true`.
 
 ```bash
 CUTOFF_DATA_PATH=./data/cutoff-records.json \
@@ -190,63 +130,40 @@ CONFIRM_CUTOFF_IMPORT=verified \
 npm run import:cutoffs
 ```
 
-The API is paginated and never returns a random probability:
+The bundled reference cutoffs remain clearly labelled until official records are imported.
 
-```http
-POST /api/predict
-Content-Type: application/json
+## Stripe subscription setup
 
-{
-  "exam": "JEE Advanced",
-  "category": "general",
-  "value": 400,
-  "state": "Maharashtra",
-  "course": "Computer Science",
-  "quota": "All India",
-  "year": 2025,
-  "page": 1,
-  "pageSize": 20
-}
-```
-
-The engine computes the distance from each stored threshold and labels it `likely`, `possible` or `reach`. These are explainable planning ranges, not guarantees.
-
-## 7. Live search API without saving results
-
-```http
-GET /api/colleges/search?q=savitribai&state=Maharashtra
-GET /api/colleges/search?state=Kerala
-```
-
-Search order:
-
-1. Query the imported `collegeDirectory` collection when Firebase is configured.
-2. Query attributed Wikipedia institution pages as a zero-key discovery fallback.
-3. Optionally enrich with Google Places when a server-only key exists.
-4. De-duplicate results and return at most 30 matches.
-
-Google Places can provide public address, phone, rating, maps and website data, but it may require billing in the operator's Google Cloud project. EduDiscover works without it. If used, enable **Places API (New)**, restrict the key, set quotas, and add only this server-side variable:
+1. Create a recurring Pro product and Price in Stripe.
+2. Configure the Stripe Customer Portal.
+3. Add a webhook endpoint: `https://your-domain.com/api/billing/webhook`.
+4. Subscribe it to:
+   - `checkout.session.completed`
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+5. Add these variables:
 
 ```env
-GOOGLE_PLACES_API_KEY=your_restricted_server_key
+APP_URL=https://your-domain.com
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRO_PRICE_ID=price_...
+STRIPE_API_VERSION=
+NEXT_PUBLIC_PRO_PRICE_LABEL="Your displayed price"
 ```
 
-Never prefix that variable with `NEXT_PUBLIC_`.
+Use Stripe test mode first. Checkout is hosted by Stripe; the app never receives card numbers. Webhooks are signature-checked, replay-limited and recorded idempotently before premium access changes. Users manage cancellation and payment methods through the Stripe portal.
 
-## 8. Image policy
+## Optional Google Places enrichment
 
-The application does not request or render remote college covers or logos. Cards and profile headers use CSS initials and category colors, so broken hotlinks cannot leave empty image boxes or add third-party tracking requests. Legacy media fields may remain in imported documents for compatibility but are not included in list payloads.
+Google Places can add public addresses, ratings, phone numbers and websites, but Google may require billing. Leave it empty to use Firestore plus Wikipedia discovery.
 
-## 9. Production deployment
+```env
+GOOGLE_PLACES_API_KEY=
+```
 
-1. Import the repository into Vercel or another Next.js host.
-2. Add all Firebase Web app variables to the correct Development, Preview and Production environments.
-3. Deploy Firestore rules and indexes with Firebase CLI.
-4. Add production/staging hostnames to Firebase Authorized domains.
-5. Import the audited directory, profile and cutoff datasets from a trusted workstation.
-6. Test signup, Google login, password reset, save/remove, search, state filters, predictor pages and mobile navigation.
-
-No payment provider or commerce environment variable is required.
+Keep this key server-only and restrict it to Places API with quotas.
 
 ## Validation
 
@@ -255,36 +172,24 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
-# or all at once
-npm run check
 ```
 
-## Production-readiness checklist
-
-- [ ] Replace reference academic records with source-provenance data.
-- [ ] Test Firestore rules with the Firebase Emulator Suite.
-- [ ] Configure Firebase App Check and provider quotas.
-- [ ] Add distributed rate limiting before multi-instance high traffic.
-- [ ] Add privacy-safe monitoring, analytics and alerting.
-- [ ] Implement account deletion and community moderation workflows.
-- [ ] Back up Firestore and document restoration procedures.
-- [ ] Move high-volume full-text catalog search to a maintained search index when Firestore token search no longer meets scale or typo-tolerance needs.
-- [ ] Complete accessibility, security, performance and cross-browser reviews.
-
-## Useful commands
+Or:
 
 ```bash
-npm run dev
-npm run lint
-npm run typecheck
-npm test
-npm run build
 npm run check
-npm run import:directory
-npm run import:colleges
-npm run import:cutoffs
-npm run firebase:deploy
 ```
+
+## Deployment checklist
+
+1. Add Firebase, Firebase Admin, Stripe and `APP_URL` variables to the hosting environment.
+2. Deploy Firestore rules and indexes.
+3. Import the audited AISHE directory and official cutoff records.
+4. Add the deployed hostname to Firebase Authorized domains.
+5. Configure the Stripe webhook and Customer Portal.
+6. Test Google login, search pagination, save/compare, free predictor, Pro checkout, webhook activation, CSV export and cancellation.
+
+For high traffic, replace the in-memory API rate limiter with Redis or another distributed limiter and move typo-tolerant full-text search to a dedicated search index.
 
 ## Maintainer
 

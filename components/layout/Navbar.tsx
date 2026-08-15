@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/compare", label: "Compare" },
   { href: "/discussions", label: "Community" },
   { href: "/saved", label: "Saved" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export function Navbar() {

@@ -15,6 +15,12 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'superadmin'];
     }
 
+    function hasPro(uid) {
+      return owns(uid)
+        && get(/databases/$(database)/documents/users/$(uid)).data.billing.plan == 'pro'
+        && get(/databases/$(database)/documents/users/$(uid)).data.billing.status in ['active', 'trialing'];
+    }
+
     match /colleges/{collegeId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
@@ -34,10 +40,14 @@ service cloud.firestore {
       allow read: if owns(uid) || isAdmin();
       allow create: if owns(uid)
         && request.resource.data.uid == uid
-        && request.resource.data.role == 'student';
+        && request.resource.data.role == 'student'
+        && !request.resource.data.keys().hasAny(['billing']);
       allow update: if owns(uid)
         && request.resource.data.uid == resource.data.uid
-        && request.resource.data.role == resource.data.role;
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName', 'email', 'photoURL', 'updatedAt', 'createdAt'
+        ]);
       allow delete: if owns(uid) || isAdmin();
 
       match /savedColleges/{collegeId} {
@@ -53,7 +63,9 @@ service cloud.firestore {
       }
 
       match /predictorResults/{resultId} {
-        allow read, create, delete: if owns(uid);
+        allow read: if owns(uid);
+        allow create: if hasPro(uid);
+        allow delete: if owns(uid);
         allow update: if false;
       }
     }

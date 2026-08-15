@@ -80,12 +80,32 @@ function firebaseRestConfig() {
   return projectId && apiKey ? { projectId, apiKey } : null;
 }
 
-export async function searchFirestoreDirectory(query: string, state?: string): Promise<ExternalCollege[]> {
+function decodeCursor(cursor: string | undefined, projectId: string) {
+  if (!cursor) return undefined;
+  try {
+    const data = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8")) as { name?: string; document?: string };
+    const expectedPrefix = `projects/${projectId}/databases/(default)/documents/collegeDirectory/`;
+    if (!data.name || !data.document?.startsWith(expectedPrefix)) return undefined;
+    return data as { name: string; document: string };
+  } catch {
+    return undefined;
+  }
+}
+
+function encodeCursor(name: string, document: string) {
+  return Buffer.from(JSON.stringify({ name, document }), "utf8").toString("base64url");
+}
+
+export async function searchFirestoreDirectory(
+  query: string,
+  state?: string,
+  cursor?: string,
+): Promise<{ results: ExternalCollege[]; nextCursor?: string }> {
   const config = firebaseRestConfig();
-  if (!config) return [];
+  if (!config) return { results: [] };
   const tokens = queryTokens(query);
   const lookupToken = [...tokens].sort((a, b) => b.length - a.length)[0];
-  if (!lookupToken && !state) return [];
+  if (!lookupToken && !state) return { results: [] };
 
   const filters: Record<string, unknown>[] = [];
   if (lookupToken) {
@@ -108,6 +128,7 @@ export async function searchFirestoreDirectory(query: string, state?: string): P
   }
 
   const where = filters.length === 1 ? filters[0] : { compositeFilter: { op: "AND", filters } };
+  const decodedCursor = decodeCursor(cursor, config.projectId);
   const url = new URL(`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(config.projectId)}/databases/(default)/documents:runQuery`);
   url.searchParams.set("key", config.apiKey);
 
@@ -119,24 +140,45 @@ export async function searchFirestoreDirectory(query: string, state?: string): P
         structuredQuery: {
           from: [{ collectionId: "collegeDirectory" }],
           where,
-          limit: 100,
+          orderBy: [
+            { field: { fieldPath: "name" }, direction: "ASCENDING" },
+            { field: { fieldPath: "__name__" }, direction: "ASCENDING" },
+          ],
+          ...(decodedCursor ? {
+            startAt: {
+              before: false,
+              values: [
+                { stringValue: decodedCursor.name },
+                { referenceValue: decodedCursor.document },
+              ],
+            },
+          } : {}),
+          limit: 31,
         },
       }),
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(8_000),
     });
     if (!response.ok) throw new Error(`Firestore directory query returned ${response.status}.`);
-    const rows = (await response.json()) as Array<{ document?: FirestoreDocument }>;
-    const results = rows.flatMap((row) => row.document ? [normalizeResult(row.document)] : []).filter((item): item is ExternalCollege => item !== null);
+    const rows = ((await response.json()) as Array<{ document?: FirestoreDocument }>).filter((row) => row.document);
+    const hasMore = rows.length > 30;
+    const pageRows = rows.slice(0, 30);
+    const results = pageRows.flatMap((row) => row.document ? [normalizeResult(row.document)] : []).filter((item): item is ExternalCollege => item !== null);
     const filtered = tokens.length > 0
       ? results.filter((college) => {
           const text = `${college.name} ${college.formattedAddress}`.toLowerCase();
           return tokens.every((token) => text.includes(token));
         })
       : results;
-    return filtered.slice(0, 30);
+    const lastDocument = pageRows.at(-1)?.document;
+    const lastData = lastDocument ? decodeFields(lastDocument.fields || {}) : undefined;
+    const lastName = lastData ? asText(lastData, "name") : undefined;
+    return {
+      results: filtered,
+      nextCursor: hasMore && lastDocument && lastName ? encodeCursor(lastName, lastDocument.name) : undefined,
+    };
   } catch (error) {
     if (process.env.NODE_ENV !== "production") console.warn("AISHE Firestore directory is unavailable:", error);
-    return [];
+    return { results: [] };
   }
 }
