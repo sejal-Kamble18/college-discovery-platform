@@ -25,7 +25,7 @@ export default async function HomePage() {
             College decisions, made clearer
           </div>
           <h1 className="mb-6 max-w-4xl text-4xl font-black tracking-tight md:text-5xl lg:text-7xl">
-            Find colleges that fit <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">your goals</span>
+            Find your <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Dream college</span>
           </h1>
           <p className="mb-10 max-w-2xl text-lg leading-relaxed text-slate-300 md:text-xl">
             Search institutions across India, compare the facts that matter, and check your exam result against clearly labelled reference cutoffs.
@@ -70,10 +70,10 @@ export default async function HomePage() {
       <section className="relative z-10 mx-4 -mt-8 max-w-6xl rounded-2xl border border-slate-200 bg-white p-4 shadow-xl shadow-slate-200/70 sm:mx-8 sm:p-6 xl:mx-auto">
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            ['01', 'Search', 'Find colleges by course, exam, and location.'],
-            ['02', 'Shortlist', 'Save promising options to your private account.'],
-            ['03', 'Compare', 'Review fees, rankings, and key facts side by side.'],
-            ['04', 'Check fit', 'Match your score with reference cutoff data.'],
+            ['01', 'Discover', 'Search the live India-wide directory by name or state.'],
+            ['02', 'Verify', 'Know which results are directory-only and which have decision data.'],
+            ['03', 'Compare', 'Review sourced fees, rankings, and key facts side by side.'],
+            ['04', 'Plan', 'Build likely, possible, and reach ranges from cutoff records.'],
           ].map(([number, title, copy]) => (
             <div key={number} className="rounded-xl px-4 py-4 transition-colors hover:bg-slate-50">
               <div className="mb-3 flex items-center gap-3">
@@ -86,12 +86,27 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="bg-white py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-brand-700">Clear data labels</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Search broadly. Decide with verified facts.</h2>
+            <p className="mt-4 text-lg leading-8 text-slate-600">A college name in a public directory is useful for discovery, but it is not enough for an admission decision. EduDiscover keeps those two levels visibly separate.</p>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            <InfoCard number="01" title="Live directory" copy="Find institutions across every Indian state and union territory without saving the search result to your account." link="/colleges" linkLabel="Search the directory" />
+            <InfoCard number="02" title="Decision profiles" copy="Use saved profiles only when fees, courses, rankings and source status are clearly labelled." link="/compare" linkLabel="Compare profiles" />
+            <InfoCard number="03" title="Cutoff evidence" copy="Filter versioned cutoff records by category, course, quota, round and year—without invented probabilities." link="/predictor" linkLabel="Open predictor" />
+          </div>
+        </div>
+      </section>
+
       {/* Featured Colleges Section */}
       <section className="py-20 md:py-28 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-10">
             <div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-3">Featured Colleges</h2>
+              <h2 className="text-3xl font-bold text-slate-900 mb-3">Reference Profiles</h2>
               <p className="text-slate-600 max-w-2xl">Explore directory profiles and clearly labelled reference data. Confirm admissions information with official sources before deciding.</p>
             </div>
             <Link href="/colleges" className="hidden md:flex items-center text-brand-600 font-bold hover:text-brand-700 transition-colors bg-brand-50 px-4 py-2 rounded-lg">
@@ -116,5 +131,16 @@ export default async function HomePage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function InfoCard({ number, title, copy, link, linkLabel }: { number: string; title: string; copy: string; link: string; linkLabel: string }) {
+  return (
+    <article className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+      <span className="text-sm font-black text-brand-700">{number}</span>
+      <h3 className="mt-4 text-xl font-extrabold text-slate-950">{title}</h3>
+      <p className="mt-3 text-sm leading-6 text-slate-600">{copy}</p>
+      <Link href={link} className="mt-6 inline-flex text-sm font-bold text-brand-700 hover:text-brand-800">{linkLabel} →</Link>
+    </article>
   );
 }

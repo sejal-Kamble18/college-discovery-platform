@@ -1,5 +1,5 @@
 export interface ExternalCollege {
-  source: "google-places" | "wikipedia";
+  source: "aishe-firestore" | "google-places" | "wikipedia";
   externalId: string;
   name: string;
   formattedAddress: string;
@@ -20,6 +20,6 @@ export interface ExternalCollege {
 export interface ExternalCollegeSearchResponse {
   results: ExternalCollege[];
   providerConfigured: boolean;
-  source: ExternalCollege["source"];
+  source: ExternalCollege["source"] | "mixed";
   message?: string;
 }

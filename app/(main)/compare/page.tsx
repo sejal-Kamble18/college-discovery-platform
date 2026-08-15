@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCompareStore } from '@/lib/store/useCompareStore';
 import { formatFees, formatRating, formatRank } from '@/lib/utils/format';
-import { CollegeMedia } from '@/components/media/CollegeMedia';
+import { CollegeIdentity } from '@/components/colleges/CollegeIdentity';
 
 export default function ComparePage() {
   const { selectedColleges, removeCollege, clearCompare } = useCompareStore();
@@ -43,7 +43,7 @@ export default function ComparePage() {
             Compare Colleges
           </h1>
           <p className="text-slate-600 text-lg max-w-3xl leading-relaxed">
-            Side-by-side comparison of {selectedColleges.length} college{selectedColleges.length !== 1 ? 's' : ''}. Analyze fees, placements, courses, and more.
+            Side-by-side comparison of {selectedColleges.length} college{selectedColleges.length !== 1 ? 's' : ''}. Review fees, rankings, exams, and source-labelled profile facts.
           </p>
         </div>
         <div className="flex gap-3 mt-4 sm:mt-0">
@@ -75,21 +75,11 @@ export default function ComparePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {collegeDetails.map((college, idx) => (
                 <div key={college?.id || idx} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                  {/* Card Header */}
-                  <div className="relative h-32 w-full bg-gradient-to-br from-slate-100 to-slate-200">
-                    {college && (
-                      <CollegeMedia
-                        src={college.imageUrl}
-                        alt={college.isVerified ? `${college.name} campus` : ''}
-                        shortName={college.shortName}
-                        category={college.category}
-                        variant="cover"
-                        className="h-full w-full"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="relative flex h-20 items-center bg-gradient-to-r from-slate-950 to-blue-950 px-5">
+                    {college && <CollegeIdentity shortName={college.shortName} category={college.category} className="h-11 w-11 text-xs" />}
                     <button
                       onClick={() => removeCollege(college!.id)}
+                      aria-label={`Remove ${college?.shortName || 'college'} from comparison`}
                       className="absolute top-3 right-3 bg-white hover:bg-slate-100 rounded-full p-1.5 shadow-md transition-colors"
                       title="Remove from comparison"
                     >
@@ -105,14 +95,7 @@ export default function ComparePage() {
                       <>
                         {/* Logo & Name */}
                         <div className="flex items-start gap-3 mb-5">
-                          <CollegeMedia
-                              src={college.logoUrl}
-                              alt={`${college.shortName} logo`}
-                              shortName={college.shortName}
-                              category={college.category}
-                              variant="logo"
-                              className="h-12 w-12 flex-shrink-0 rounded-lg border border-slate-200 bg-white"
-                          />
+                          <CollegeIdentity shortName={college.shortName} category={college.category} className="h-12 w-12 flex-shrink-0 text-xs" />
                           <div>
                             <h3 className="font-bold text-slate-900 text-lg leading-tight">{college.name}</h3>
                             <p className="text-sm text-slate-500 mt-0.5">{college.location.city}, {college.location.state}</p>

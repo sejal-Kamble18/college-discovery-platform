@@ -50,7 +50,7 @@ export function CollegeSearchBar() {
       <input
         type="text"
         className="block w-full pl-11 pr-4 py-3.5 border border-slate-200 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 sm:text-sm shadow-sm transition-all"
-        placeholder="Search for colleges, exams, courses, or cities..."
+        placeholder="Search any Indian college, course, exam, or city..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />

@@ -3,12 +3,9 @@ import { readFile } from "fs/promises";
 import path from "path";
 
 const serviceAccountPath = path.join(process.cwd(), "serviceAccountKey.json");
-const dataPath = path.join(
-  process.cwd(),
-  "scripts",
-  "data",
-  "colleges_10000_seed.json"
-);
+const dataPath = process.env.COLLEGE_DATA_PATH
+  ? path.resolve(process.env.COLLEGE_DATA_PATH)
+  : path.join(process.cwd(), "scripts", "data", "colleges.json");
 
 async function main() {
   if (process.env.CONFIRM_COLLEGE_IMPORT !== "verified") {

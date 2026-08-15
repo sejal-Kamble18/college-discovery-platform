@@ -67,12 +67,18 @@ export default async function CollegesPage({
           Explore Colleges
         </h1>
         <p className="text-slate-600 mb-6 text-lg max-w-3xl leading-relaxed">
-          Search curated reference profiles and live public sources across India. Every result is labelled so you know what to verify before applying.
+          Search any Indian college by name or browse institutions by state. Public-directory matches appear immediately; detailed admission data appears when a verified profile exists in Firebase.
         </p>
         <div className="max-w-2xl">
           <CollegeSearchBar />
         </div>
       </div>
+
+      <LiveCollegeResults
+        query={query}
+        state={state}
+        excludeNames={colleges.map((college) => college.name)}
+      />
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters (Sticky on Desktop) */}
@@ -84,9 +90,9 @@ export default async function CollegesPage({
         <div className="flex-1 min-w-0 pb-20">
           <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">EduDiscover directory</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">Verified-data workspace</p>
               <h2 className="mt-1 text-xl font-extrabold text-slate-900">
-              {total} curated {total === 1 ? 'profile' : 'profiles'}
+              {total} saved {total === 1 ? 'profile' : 'profiles'}
               {query && <span className="text-slate-500 font-normal"> for &quot;{query}&quot;</span>}
               </h2>
             </div>
@@ -102,8 +108,6 @@ export default async function CollegesPage({
               {currentPage < totalPages ? <Link href={pageHref(currentPage + 1)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Next →</Link> : <span />}
             </nav>
           )}
-
-          <LiveCollegeResults query={query} />
         </div>
       </div>
     </div>

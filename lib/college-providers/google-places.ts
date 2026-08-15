@@ -124,12 +124,13 @@ function providerHeaders(fieldMask: string): HeadersInit {
   };
 }
 
-export async function searchGoogleColleges(query: string): Promise<ExternalCollege[]> {
+export async function searchGoogleColleges(query: string, state?: string): Promise<ExternalCollege[]> {
+  const location = state?.trim() ? ` in ${state.trim()}` : " in India";
   const response = await fetch(SEARCH_URL, {
     method: "POST",
     headers: providerHeaders(SEARCH_FIELDS),
     body: JSON.stringify({
-      textQuery: `${query} college university India`,
+      textQuery: `${query || "colleges and universities"}${location}`,
       languageCode: "en",
       regionCode: "IN",
       pageSize: 10,
