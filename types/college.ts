@@ -108,7 +108,7 @@ export interface College {
   facilities: string[];
   courses: Course[];
   placements: PlacementData[];
-  /** Optional verified media. The UI always provides a local visual fallback. */
+  /** Legacy import fields. The product UI does not request or render remote college media. */
   imageUrl?: string;
   logoUrl?: string;
   galleryUrls: string[];
@@ -144,8 +144,6 @@ export type CollegeListItem = Pick<
   | 'reviewCount'
   | 'exams'
   | 'accreditation'
-  | 'imageUrl'
-  | 'logoUrl'
   | 'established'
   | 'isVerified'
 >;

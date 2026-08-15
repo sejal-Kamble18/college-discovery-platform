@@ -20,6 +20,16 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /cutoffRecords/{recordId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /collegeDirectory/{recordId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     match /users/{uid} {
       allow read: if owns(uid) || isAdmin();
       allow create: if owns(uid)

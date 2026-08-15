@@ -2,7 +2,7 @@
 
 import { useCompareStore } from '@/lib/store/useCompareStore';
 import Link from 'next/link';
-import { CollegeMedia } from '@/components/media/CollegeMedia';
+import { CollegeIdentity } from '@/components/colleges/CollegeIdentity';
 
 export function CompareBar() {
   const { selectedColleges, removeCollege, clearCompare } = useCompareStore();
@@ -25,14 +25,7 @@ export function CompareBar() {
           
           {selectedColleges.map((college) => (
             <div key={college.id} className="relative bg-slate-800 rounded-lg p-2 pr-8 flex items-center gap-3 border border-slate-700 min-w-[200px]">
-              <CollegeMedia
-                src={college.logoUrl}
-                alt={`${college.shortName} logo`}
-                shortName={college.shortName}
-                category={college.category}
-                variant="logo"
-                className="h-8 w-8 flex-shrink-0 rounded bg-white"
-              />
+              <CollegeIdentity shortName={college.shortName} category={college.category} className="h-8 w-8 flex-shrink-0 text-[10px]" />
               <p className="text-sm text-slate-200 font-medium truncate">{college.shortName}</p>
               <button 
                 onClick={() => removeCollege(college.id)}

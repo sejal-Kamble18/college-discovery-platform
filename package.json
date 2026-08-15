@@ -12,6 +12,8 @@
     "test": "node --import tsx --test 'lib/**/*.test.ts'",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "import:colleges": "tsx scripts/import-colleges.ts",
+    "import:directory": "tsx scripts/import-directory.ts",
+    "import:cutoffs": "tsx scripts/import-cutoffs.ts",
     "firebase:deploy": "firebase deploy --only firestore:rules,firestore:indexes"
   },
   

@@ -1,4 +1,5 @@
 import { SEED_COLLEGES } from "@/lib/data/colleges.seed";
+import { INDIAN_STATES } from "@/constants/filters";
 import type { College, CollegeListItem, SortField, SortOrder } from "@/types";
 import { ITEMS_PER_PAGE } from "@/types/filters";
 
@@ -39,10 +40,6 @@ interface FirestoreDocument {
   fields?: Record<string, FirestoreValue>;
 }
 
-const STATIC_STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Odisha", "Punjab", "Rajasthan", "Tamil Nadu", "Telangana", "Uttar Pradesh", "Uttarakhand", "West Bengal",
-];
-
 function decodeValue(value: FirestoreValue): unknown {
   if ("nullValue" in value) return null;
   if ("booleanValue" in value) return value.booleanValue;
@@ -64,8 +61,8 @@ function normalizeCollege(docId: string, data: Record<string, unknown>): College
 }
 
 function toListItem(college: College): CollegeListItem {
-  const { id, slug, name, shortName, type, category, location, ranking, fees, rating, reviewCount, exams, accreditation, imageUrl, logoUrl, established, isVerified } = college;
-  return { id, slug, name, shortName, type, category, location, ranking, fees, rating, reviewCount, exams, accreditation, imageUrl, logoUrl, established, isVerified };
+  const { id, slug, name, shortName, type, category, location, ranking, fees, rating, reviewCount, exams, accreditation, established, isVerified } = college;
+  return { id, slug, name, shortName, type, category, location, ranking, fees, rating, reviewCount, exams, accreditation, established, isVerified };
 }
 
 function firebaseRestConfig() {
@@ -127,7 +124,15 @@ export async function getColleges(params: GetCollegesParams = {}): Promise<GetCo
   let pool = await fetchFirestoreColleges(Number(process.env.COLLEGE_QUERY_SCAN_LIMIT || 250));
   const normalizedQuery = query.trim().toLowerCase();
 
-  if (normalizedQuery) pool = pool.filter((college) => [college.name, college.shortName, college.location?.city, college.location?.state, ...(college.searchTokens || []), ...(college.exams || []), ...(college.courses || []).map((course) => course.name)].some((value) => String(value || "").toLowerCase().includes(normalizedQuery)));
+  if (normalizedQuery) {
+    const tokens = normalizedQuery.split(/\s+/).filter(Boolean);
+    pool = pool.filter((college) => {
+      const searchable = [college.name, college.shortName, college.location?.city, college.location?.state, ...(college.searchTokens || []), ...(college.exams || []), ...(college.courses || []).map((course) => course.name)]
+        .map((value) => String(value || "").toLowerCase())
+        .join(" ");
+      return tokens.every((token) => searchable.includes(token));
+    });
+  }
   if (state) pool = pool.filter((college) => college.location?.state === state);
   if (type) pool = pool.filter((college) => college.type === type);
   if (category) pool = pool.filter((college) => college.category === category);
@@ -161,5 +166,5 @@ export async function getCollegeBySlug(slug: string): Promise<College | null> {
 }
 
 export const getCollegeById = getCollegeBySlug;
-export async function getAvailableStates() { return STATIC_STATES; }
+export async function getAvailableStates() { return [...INDIAN_STATES]; }
 export async function getAllColleges() { return fetchFirestoreColleges(60); }
