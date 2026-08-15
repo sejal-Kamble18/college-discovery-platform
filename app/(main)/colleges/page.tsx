@@ -1,9 +1,12 @@
 
 
+import Link from 'next/link';
 import { getColleges } from '@/lib/firestore/colleges';
 import { CollegeSearchBar } from '@/components/colleges/CollegeSearchBar';
 import { CollegeFilters } from '@/components/colleges/CollegeFilters';
 import { CollegeGrid } from '@/components/colleges/CollegeGrid';
+import { LiveCollegeResults } from '@/components/colleges/LiveCollegeResults';
+import type { SortField } from '@/types';
 
 export default async function CollegesPage({
   searchParams,
@@ -17,6 +20,13 @@ export default async function CollegesPage({
   // 2. Safely parse URL params
   const query = typeof resolvedParams.query === 'string' ? resolvedParams.query : '';
   const state = typeof resolvedParams.state === 'string' ? resolvedParams.state : '';
+  const type = typeof resolvedParams.type === 'string' ? resolvedParams.type : '';
+  const category = typeof resolvedParams.category === 'string' ? resolvedParams.category : '';
+  const exam = typeof resolvedParams.exam === 'string' ? resolvedParams.exam : '';
+  const sortByParam = typeof resolvedParams.sortBy === 'string' ? resolvedParams.sortBy : 'ranking';
+  const validSortFields: SortField[] = ['ranking', 'fees', 'rating', 'name', 'established'];
+  const sortBy = validSortFields.includes(sortByParam as SortField) ? sortByParam as SortField : 'ranking';
+  const sortOrder = sortBy === 'rating' ? 'desc' : 'asc';
   const maxFeesStr = typeof resolvedParams.maxFees === 'string' ? resolvedParams.maxFees : '';
   const minRatingStr = typeof resolvedParams.minRating === 'string' ? resolvedParams.minRating : '';
   const pageStr = typeof resolvedParams.page === 'string' ? resolvedParams.page : '1';
@@ -26,13 +36,27 @@ export default async function CollegesPage({
   const page = parseInt(pageStr, 10) || 1;
 
   // 3. Fetch data securely from the service layer
-  const { colleges, total } = await getColleges({
+  const { colleges, total, page: currentPage, totalPages } = await getColleges({
     query,
     state,
+    type,
+    category,
+    exam,
     maxFees,
     minRating,
+    sortBy,
+    sortOrder,
     page,
   });
+
+  const pageHref = (nextPage: number) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(resolvedParams)) {
+      if (typeof value === 'string' && key !== 'page') params.set(key, value);
+    }
+    params.set('page', String(nextPage));
+    return `/colleges?${params.toString()}`;
+  };
 
   // 4. Render UI
   return (
@@ -43,7 +67,7 @@ export default async function CollegesPage({
           Explore Colleges
         </h1>
         <p className="text-slate-600 mb-6 text-lg max-w-3xl leading-relaxed">
-          Browse through {total > 0 ? `${total} top` : 'our top'} institutions. Filter by location, fees, and ratings to find the perfect fit for your career.
+          Search curated reference profiles and live public sources across India. Every result is labelled so you know what to verify before applying.
         </p>
         <div className="max-w-2xl">
           <CollegeSearchBar />
@@ -58,17 +82,28 @@ export default async function CollegesPage({
 
         {/* Main Content Area */}
         <div className="flex-1 min-w-0 pb-20">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900 bg-white px-4 py-2 border border-slate-200 rounded-lg shadow-sm">
-              Showing {colleges.length} {colleges.length === 1 ? 'Result' : 'Results'}
+          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-700">EduDiscover directory</p>
+              <h2 className="mt-1 text-xl font-extrabold text-slate-900">
+              {total} curated {total === 1 ? 'profile' : 'profiles'}
               {query && <span className="text-slate-500 font-normal"> for &quot;{query}&quot;</span>}
-            </h2>
-            {/* Optional Sorting Dropdown can go here in future iterations */}
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-slate-500">Showing {colleges.length} on this page</p>
           </div>
           
           <CollegeGrid colleges={colleges} />
-          
-          {/* Pagination logic can be added here */}
+
+          {totalPages > 1 && (
+            <nav className="mt-8 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4" aria-label="College result pages">
+              {currentPage > 1 ? <Link href={pageHref(currentPage - 1)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">← Previous</Link> : <span />}
+              <span className="text-sm font-semibold text-slate-500">Page {currentPage} of {totalPages}</span>
+              {currentPage < totalPages ? <Link href={pageHref(currentPage + 1)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">Next →</Link> : <span />}
+            </nav>
+          )}
+
+          <LiveCollegeResults query={query} />
         </div>
       </div>
     </div>

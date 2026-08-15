@@ -7,8 +7,12 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint",
-  "import:colleges": "tsx scripts/import-colleges.ts"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test 'lib/**/*.test.ts'",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "import:colleges": "tsx scripts/import-colleges.ts",
+    "firebase:deploy": "firebase deploy --only firestore:rules,firestore:indexes"
   },
   
   "dependencies": {

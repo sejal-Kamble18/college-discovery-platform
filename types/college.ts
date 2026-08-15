@@ -108,8 +108,9 @@ export interface College {
   facilities: string[];
   courses: Course[];
   placements: PlacementData[];
-  imageUrl: string;
-  logoUrl: string;
+  /** Optional verified media. The UI always provides a local visual fallback. */
+  imageUrl?: string;
+  logoUrl?: string;
   galleryUrls: string[];
   website: string;
   established: number; // year

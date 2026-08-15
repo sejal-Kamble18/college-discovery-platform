@@ -16,12 +16,11 @@ const quickLinks = [
   { label: 'Saved Colleges', href: '/saved' },
 ];
 
-const companyLinks = [
-  { label: 'About Us', href: '#' },
-  { label: 'Contact Support', href: '#' },
-  { label: 'Privacy Policy', href: '#' },
-  { label: 'Terms of Service', href: '#' },
-  { label: 'Careers', href: '#' },
+const legalLinks = [
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms of Service', href: '/terms' },
+  { label: 'Deployment Setup', href: '/setup' },
+  { label: 'Source Code', href: 'https://github.com/sejal-Kamble18/college-discovery-platform' },
 ];
 
 export function Footer() {
@@ -43,8 +42,8 @@ export function Footer() {
             </Link>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-slate-400">
-              Discover, compare, predict, and apply to colleges across India with
-              reliable data, smart filters, and decision-first tools.
+              Discover and compare colleges across India using live directory results,
+              clearly labelled reference data, and transparent decision tools.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -65,7 +64,7 @@ export function Footer() {
 
           <FooterColumn title="Top Colleges" links={topCollegeLinks} />
           <FooterColumn title="Platform" links={quickLinks} />
-          <FooterColumn title="Company" links={companyLinks} />
+          <FooterColumn title="Project" links={legalLinks} />
         </div>
 
         <div className="mt-12 border-t border-slate-800 pt-6">
@@ -76,7 +75,7 @@ export function Footer() {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <span>10,000+ colleges</span>
+              <span>Live directory search</span>
               <span>•</span>
               <span>Search & compare</span>
               <span>•</span>

@@ -35,21 +35,6 @@
   --radius-sm: calc(var(--radius) - 4px);
 }
 
-/* 
-  For this MVP, we enforce light mode to maintain brand consistency.
-  Dark mode can be added in a later phase.
-*/
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --card: #1e293b;
-    --card-foreground: #f8fafc;
-    --border: #334155;
-    --input: #334155;
-  }
-}
-
 body {
   background-color: var(--background);
   color: var(--foreground);

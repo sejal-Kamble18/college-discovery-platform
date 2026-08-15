@@ -1,5 +1,5 @@
 import admin from "firebase-admin";
-import fs from "fs";
+import { readFile } from "fs/promises";
 import path from "path";
 
 const serviceAccountPath = path.join(process.cwd(), "serviceAccountKey.json");
@@ -10,16 +10,17 @@ const dataPath = path.join(
   "colleges_10000_seed.json"
 );
 
-const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf-8"));
-const colleges = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
-
-const db = admin.firestore();
-
 async function main() {
+  if (process.env.CONFIRM_COLLEGE_IMPORT !== "verified") {
+    throw new Error("Import stopped. Verify the source data, then run with CONFIRM_COLLEGE_IMPORT=verified.");
+  }
+
+  const serviceAccount = JSON.parse(await readFile(serviceAccountPath, "utf-8"));
+  const colleges = JSON.parse(await readFile(dataPath, "utf-8"));
+  if (!Array.isArray(colleges)) throw new Error("College dataset must be a JSON array.");
+
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+  const db = admin.firestore();
   console.log(`Importing ${colleges.length} colleges...`);
 
   let batch = db.batch();
