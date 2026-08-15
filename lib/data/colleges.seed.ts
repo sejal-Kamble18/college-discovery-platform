@@ -8,6 +8,9 @@ function makeCollege(
 ): College {
   return {
     ...partial,
+    // Seed records are reference content until an administrator verifies
+    // every field against an official source.
+    isVerified: false,
     searchTokens: generateSearchTokens(
       partial.name,
       partial.shortName,

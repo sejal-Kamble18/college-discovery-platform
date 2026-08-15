@@ -1,7 +1,13 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { INDIAN_STATES } from '@/constants/filters';
+import {
+  COLLEGE_CATEGORY_OPTIONS,
+  COLLEGE_TYPE_OPTIONS,
+  EXAM_OPTIONS,
+  INDIAN_STATES,
+  SORT_OPTIONS,
+} from '@/constants/filters';
 
 const FEE_OPTIONS = [
   { label: 'Under ₹500,000', value: '500000' },
@@ -39,8 +45,12 @@ export function CollegeFilters() {
   };
 
   const currentState = searchParams.get('state') || '';
+  const currentType = searchParams.get('type') || '';
+  const currentCategory = searchParams.get('category') || '';
+  const currentExam = searchParams.get('exam') || '';
   const currentMaxFees = searchParams.get('maxFees') || '';
   const currentMinRating = searchParams.get('minRating') || '';
+  const currentSort = searchParams.get('sortBy') || 'ranking';
 
   const clearAll = () => {
     // Keep search query if it exists, but clear all other filters
@@ -52,7 +62,7 @@ export function CollegeFilters() {
     }
   };
 
-  const hasActiveFilters = currentState || currentMaxFees || currentMinRating;
+  const hasActiveFilters = currentState || currentType || currentCategory || currentExam || currentMaxFees || currentMinRating || currentSort !== 'ranking';
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-8 sticky top-24 shadow-sm">
@@ -67,6 +77,30 @@ export function CollegeFilters() {
             Clear All
           </button>
         )}
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-sm text-slate-900">Study area</h4>
+        <select className="w-full border border-slate-200 rounded-lg py-2.5 px-3 text-sm outline-none bg-white text-slate-700" value={currentCategory} onChange={(e) => updateFilter('category', e.target.value)}>
+          <option value="">All study areas</option>
+          {COLLEGE_CATEGORY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-sm text-slate-900">Institution type</h4>
+        <select className="w-full border border-slate-200 rounded-lg py-2.5 px-3 text-sm outline-none bg-white text-slate-700" value={currentType} onChange={(e) => updateFilter('type', e.target.value)}>
+          <option value="">All institution types</option>
+          {COLLEGE_TYPE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </div>
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-sm text-slate-900">Accepted exam</h4>
+        <select className="w-full border border-slate-200 rounded-lg py-2.5 px-3 text-sm outline-none bg-white text-slate-700" value={currentExam} onChange={(e) => updateFilter('exam', e.target.value)}>
+          <option value="">All exams</option>
+          {EXAM_OPTIONS.map((exam) => <option key={exam} value={exam}>{exam}</option>)}
+        </select>
       </div>
 
       {/* State Filter */}
@@ -146,6 +180,13 @@ export function CollegeFilters() {
             </label>
           ))}
         </div>
+      </div>
+
+      <div className="space-y-3 border-t border-slate-100 pt-6">
+        <h4 className="font-semibold text-sm text-slate-900">Sort results</h4>
+        <select className="w-full border border-slate-200 rounded-lg py-2.5 px-3 text-sm outline-none bg-white text-slate-700" value={currentSort} onChange={(e) => updateFilter('sortBy', e.target.value)}>
+          {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
       </div>
     </div>
   );

@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { useCompareStore } from '@/lib/store/useCompareStore';
 import type { CollegeListItem } from '@/types';
 import { formatFees, formatRank, formatRating } from '@/lib/utils/format';
+import { useSavedColleges } from '@/lib/hooks/useSavedColleges';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface CollegeCardProps {
   college: CollegeListItem;
@@ -12,20 +15,20 @@ interface CollegeCardProps {
 
 export function CollegeCard({ college }: CollegeCardProps) {
   const { selectedColleges, toggleCollege } = useCompareStore();
+  const { user, savedIds, toggle: toggleSaved } = useSavedColleges();
+  const router = useRouter();
+  const [saveError, setSaveError] = useState('');
   const isSelected = selectedColleges.some((c) => c.id === college.id);
+  const isSaved = savedIds.has(college.id);
   const canAdd = selectedColleges.length < 3 || isSelected;
 
   return (
     <div className="group relative flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-      {/* Cover Image & Top Badges */}
+      {/* Cover image and profile badges */}
       <div className="relative h-40 w-full bg-slate-100 overflow-hidden">
-        {/* Placeholder gradient if image fails, but Next.js Image handles standard loading */}
+        {/* Neutral background remains visible if a remote image cannot be loaded. */}
         <div className="absolute inset-0 bg-gradient-to-tr from-slate-200 to-slate-100" />
 
-        {/* 
-          Using unoptimized for mock URLs. 
-          In production, configure next.config.ts remote patterns.
-        */}
         <Image
           src={college.imageUrl}
           alt={college.name}
@@ -39,6 +42,9 @@ export function CollegeCard({ college }: CollegeCardProps) {
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${college.isVerified ? 'bg-emerald-600 text-white' : 'bg-white/90 text-slate-700'}`}>
+            {college.isVerified ? 'Verified profile' : 'Reference data'}
+          </span>
           {college.ranking.nirf && (
             <span className="bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
               NIRF {formatRank(college.ranking.nirf)}
@@ -132,6 +138,25 @@ export function CollegeCard({ college }: CollegeCardProps) {
               {isSelected ? 'Added' : 'Compare'}
             </button>
           </div>
+          <button
+            type="button"
+            onClick={async () => {
+              setSaveError('');
+              if (!user) {
+                router.push('/auth/login');
+                return;
+              }
+              try {
+                await toggleSaved(college);
+              } catch (error) {
+                setSaveError(error instanceof Error ? error.message : 'Could not update saved colleges.');
+              }
+            }}
+            className={`w-full rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${isSaved ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+          >
+            {isSaved ? '♥ Saved' : '♡ Save college'}
+          </button>
+          {saveError && <p className="text-xs text-red-700">{saveError}</p>}
         </div>
       </div>
     </div>

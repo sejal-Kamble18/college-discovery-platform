@@ -6,10 +6,10 @@ export function CollegeCourses({ college }: { college: College }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-8">
+    <section id="courses" className="scroll-mt-24 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-8">
       <div className="p-6 border-b border-slate-200 bg-slate-50/50">
         <h2 className="text-xl font-bold text-slate-900">Courses & Fees</h2>
-        <p className="text-slate-500 mt-1">Detailed information about programs offered.</p>
+        <p className="text-slate-500 mt-1">Reference program and fee data. Confirm the current structure with the institution.</p>
       </div>
 
       <div className="divide-y divide-slate-100">
@@ -53,14 +53,12 @@ export function CollegeCourses({ college }: { college: College }) {
                     ₹{(course.feesPerYear / 100000).toFixed(2)}L
                   </p>
                 </div>
-                <button className="text-brand-600 font-bold text-sm hover:underline mt-2">
-                  View Structure
-                </button>
+                <span className="text-brand-700 font-bold text-xs mt-2">Reference amount</span>
               </div>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

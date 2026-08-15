@@ -6,7 +6,7 @@ import { CollegeCard } from '@/components/colleges/CollegeCard';
 
 export default async function HomePage() {
   // Fetch top 3 colleges natively on the server for the "Featured" section
-  const { colleges: featuredColleges } = await getColleges({
+  const { colleges: featuredColleges, total } = await getColleges({
     sortBy: 'rating',
     sortOrder: 'desc',
     page: 1
@@ -29,7 +29,7 @@ export default async function HomePage() {
             Find Your <span className="text-brand-500">Dream College</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-300 max-w-2xl mb-10 leading-relaxed">
-            Discover, compare, and apply to India&rsquo;s top engineering, medical, and management institutes. Make informed decisions about your future.
+            Search and compare institutions across India, save a private shortlist, and match your exam result against clearly labelled reference cutoffs.
           </p>
 
           {/* Visual CTA linking directly to our fully functional search page */}
@@ -58,20 +58,20 @@ export default async function HomePage() {
       <section className="bg-white border-b border-slate-200 py-12 relative z-10 -mt-8 mx-4 sm:mx-8 max-w-5xl xl:mx-auto rounded-2xl shadow-sm">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
           <div className="text-center px-4">
-            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">500+</p>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Top Colleges</p>
+            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">{total}+</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Loaded profiles</p>
           </div>
           <div className="text-center px-4">
-            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">50k+</p>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Admissions</p>
+            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">Live</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">India-wide search</p>
           </div>
           <div className="text-center px-4">
-            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">10k+</p>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Reviews</p>
+            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">Secure</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Account shortlists</p>
           </div>
           <div className="text-center px-4">
-            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">100%</p>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Verified Data</p>
+            <p className="text-3xl md:text-4xl font-extrabold text-brand-600 mb-1">0</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Random predictions</p>
           </div>
         </div>
       </section>
@@ -82,7 +82,7 @@ export default async function HomePage() {
           <div className="flex items-end justify-between mb-10">
             <div>
               <h2 className="text-3xl font-bold text-slate-900 mb-3">Featured Colleges</h2>
-              <p className="text-slate-600 max-w-2xl">Discover top-rated institutions across India, chosen based on student reviews, placement records, and NIRF rankings.</p>
+              <p className="text-slate-600 max-w-2xl">Explore directory profiles and clearly labelled reference data. Confirm admissions information with official sources before deciding.</p>
             </div>
             <Link href="/colleges" className="hidden md:flex items-center text-brand-600 font-bold hover:text-brand-700 transition-colors bg-brand-50 px-4 py-2 rounded-lg">
               View All

@@ -1,17 +1,27 @@
-import { auth } from "@/lib/firebase";
+import { auth, firebaseConfigurationMessage } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
+  getAdditionalUserInfo,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  sendPasswordResetEmail,
   updateProfile,
 } from "firebase/auth";
+import { upsertUserProfile } from "@/lib/firestore/users";
 
 const googleProvider = new GoogleAuthProvider();
 
+function requireAuth() {
+  if (!auth) throw new Error(firebaseConfigurationMessage);
+  return auth;
+}
+
 export async function loginWithGoogle() {
-  return signInWithPopup(auth, googleProvider);
+  const result = await signInWithPopup(requireAuth(), googleProvider);
+  await upsertUserProfile(result.user, getAdditionalUserInfo(result)?.isNewUser ?? false);
+  return result;
 }
 
 export async function loginWithEmail(
@@ -19,7 +29,7 @@ export async function loginWithEmail(
   password: string
 ) {
   return signInWithEmailAndPassword(
-    auth,
+    requireAuth(),
     email,
     password
   );
@@ -31,20 +41,26 @@ export async function signupWithEmail(
   password: string
 ) {
   const result = await createUserWithEmailAndPassword(
-    auth,
+    requireAuth(),
     email,
     password
   );
 
-  if (auth.currentUser) {
-    await updateProfile(auth.currentUser, {
+  const currentAuth = requireAuth();
+  if (currentAuth.currentUser) {
+    await updateProfile(currentAuth.currentUser, {
       displayName: name,
     });
+    await upsertUserProfile(currentAuth.currentUser, true);
   }
 
   return result;
 }
 
 export async function logoutUser() {
-  return signOut(auth);
+  return signOut(requireAuth());
+}
+
+export async function requestPasswordReset(email: string) {
+  return sendPasswordResetEmail(requireAuth(), email);
 }

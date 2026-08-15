@@ -11,7 +11,7 @@ Please read this guide before getting started.
 Before you begin, make sure you have the following installed:
 
 - Git
-- Node.js (v18 or later)
+- Node.js 20.9 or later
 - npm
 - VS Code (Recommended)
 - GitHub Account
@@ -64,7 +64,7 @@ You should see both **origin** and **upstream**.
 # 📦 Step 4: Install Dependencies
 
 ```bash
-npm install
+npm ci
 ```
 
 ---
@@ -184,10 +184,10 @@ Please:
 
 Before committing:
 
-- Run the project successfully.
-- Verify your feature works.
-- Ensure there are no console errors.
-- Confirm existing functionality is not broken.
+- Run `npm run check`.
+- Verify your feature manually on desktop and mobile.
+- Ensure there are no browser or server console errors.
+- Update tests and documentation for changed behavior.
 
 ---
 

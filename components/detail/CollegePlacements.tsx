@@ -5,10 +5,10 @@ export function CollegePlacements({ college }: { college: College }) {
     return null;
   }
 
-  const latestPlacement = college.placements.sort((a, b) => b.year - a.year)[0];
+  const latestPlacement = [...college.placements].sort((a, b) => b.year - a.year)[0];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mt-8">
+    <section id="placements" className="scroll-mt-24 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mt-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-slate-900">Placement Highlights</h2>
@@ -54,6 +54,7 @@ export function CollegePlacements({ college }: { college: College }) {
           ))}
         </div>
       </div>
-    </div>
+      <p className="mt-6 text-xs leading-5 text-slate-500">Placement figures are reference data and may use different reporting methods. Verify the official placement report before relying on them.</p>
+    </section>
   );
 }

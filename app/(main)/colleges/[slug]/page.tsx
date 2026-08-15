@@ -1,19 +1,12 @@
 import { notFound } from 'next/navigation';
-import { getCollegeById, getColleges } from '@/lib/firestore/colleges';
+import Link from 'next/link';
+import { getCollegeById } from '@/lib/firestore/colleges';
 import { CollegeHero } from '@/components/detail/CollegeHero';
 import { CollegeStats } from '@/components/detail/CollegeStats';
 import { CollegeCourses } from '@/components/detail/CollegeCourses';
 import { CollegePlacements } from '@/components/detail/CollegePlacements';
 import { CollegeReviews } from '@/components/detail/CollegeReviews';
 import { RecentViewTracker } from '@/components/detail/RecentViewTracker';
-
-// Generate static params for faster loading in production
-export async function generateStaticParams() {
-  const { colleges } = await getColleges({ page: 1, limit: 100 });
-  return colleges.map((college) => ({
-    slug: college.slug,
-  }));
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
@@ -45,6 +38,11 @@ export default async function CollegeDetailPage({
       <CollegeHero college={college} />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        {!college.isVerified && (
+          <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-950">
+            <strong>Reference profile:</strong> this record has not yet completed the project&rsquo;s source-verification workflow. Confirm fees, cutoffs, seats, placements, rankings, and deadlines on the institution and official counselling websites.
+          </div>
+        )}
         <div className="flex flex-col lg:flex-row gap-8">
           
           {/* Main Content Area */}
@@ -60,18 +58,18 @@ export default async function CollegeDetailPage({
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sticky top-24">
               <h3 className="font-bold text-slate-900 mb-4">Quick Links</h3>
               <ul className="space-y-3">
-                <li><button className="text-brand-600 hover:text-brand-800 font-medium w-full text-left flex justify-between items-center">Admission Process <span className="text-slate-400">→</span></button></li>
-                <li><button className="text-brand-600 hover:text-brand-800 font-medium w-full text-left flex justify-between items-center">Cutoffs 2025 <span className="text-slate-400">→</span></button></li>
-                <li><button className="text-brand-600 hover:text-brand-800 font-medium w-full text-left flex justify-between items-center">Hostel & Facilities <span className="text-slate-400">→</span></button></li>
-                <li><button className="text-brand-600 hover:text-brand-800 font-medium w-full text-left flex justify-between items-center">Scholarships <span className="text-slate-400">→</span></button></li>
+                <li><a href="#overview" className="text-brand-600 hover:text-brand-800 font-medium w-full flex justify-between items-center">Overview & facilities <span className="text-slate-400">→</span></a></li>
+                <li><a href="#courses" className="text-brand-600 hover:text-brand-800 font-medium w-full flex justify-between items-center">Courses & reference fees <span className="text-slate-400">→</span></a></li>
+                <li><a href="#placements" className="text-brand-600 hover:text-brand-800 font-medium w-full flex justify-between items-center">Placement data <span className="text-slate-400">→</span></a></li>
+                <li><Link href="/predictor" className="text-brand-600 hover:text-brand-800 font-medium w-full flex justify-between items-center">Cutoff matcher <span className="text-slate-400">→</span></Link></li>
               </ul>
               
               <div className="mt-8 pt-6 border-t border-slate-100">
-                <h3 className="font-bold text-slate-900 mb-2">Need Help?</h3>
-                <p className="text-sm text-slate-500 mb-4">Get personalized admission guidance from our experts.</p>
-                <button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl transition-colors">
-                  Talk to Counselor
-                </button>
+                <h3 className="font-bold text-slate-900 mb-2">Verify before applying</h3>
+                <p className="text-sm text-slate-500 mb-4">Use the institution website for current eligibility, deadlines, fees, and applications.</p>
+                <a href={college.website} target="_blank" rel="noreferrer" className="block w-full bg-slate-900 hover:bg-slate-800 text-center text-white font-bold py-3 px-4 rounded-xl transition-colors">
+                  Visit official website
+                </a>
               </div>
             </div>
           </div>

@@ -41,7 +41,7 @@ export function CollegeStats({ college }: { college: College }) {
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+    <section id="overview" className="scroll-mt-24 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
       <h2 className="text-xl font-bold text-slate-900 mb-6">College Overview</h2>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -69,6 +69,6 @@ export function CollegeStats({ college }: { college: College }) {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

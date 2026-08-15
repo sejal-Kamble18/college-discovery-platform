@@ -1,40 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCompareStore } from '@/lib/store/useCompareStore';
-import { getColleges } from '@/lib/firestore/colleges';
 import { formatFees, formatRating, formatRank } from '@/lib/utils/format';
-import type { CollegeListItem } from '@/types';
 
 export default function ComparePage() {
   const { selectedColleges, removeCollege, clearCompare } = useCompareStore();
-  const [collegeDetails, setCollegeDetails] = useState<(CollegeListItem | null)[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (selectedColleges.length === 0) {
-      return;
-    }
-
-    const fetchDetails = async () => {
-      setLoading(true);
-      try {
-        const { colleges: allColleges } = await getColleges({});
-        const details = selectedColleges.map((item) =>
-          allColleges.find((c) => c.id === item.id) || null
-        );
-        setCollegeDetails(details);
-      } catch (error) {
-        console.error('Error fetching college details:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDetails();
-  }, [selectedColleges]);
+  const collegeDetails = selectedColleges;
+  const loading = false;
 
   if (selectedColleges.length === 0) {
     return (

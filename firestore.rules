@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function owns(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'superadmin'];
+    }
+
+    match /colleges/{collegeId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /users/{uid} {
+      allow read: if owns(uid) || isAdmin();
+      allow create: if owns(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.role == 'student';
+      allow update: if owns(uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.role == resource.data.role;
+      allow delete: if owns(uid) || isAdmin();
+
+      match /savedColleges/{collegeId} {
+        allow read, create, update, delete: if owns(uid);
+      }
+
+      match /comparisons/{comparisonId} {
+        allow read, create, update, delete: if owns(uid);
+      }
+
+      match /applications/{applicationId} {
+        allow read, create, update, delete: if owns(uid);
+      }
+
+      match /predictorResults/{resultId} {
+        allow read, create, delete: if owns(uid);
+        allow update: if false;
+      }
+    }
+
+    match /discussions/{discussionId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.author.uid == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 10
+        && request.resource.data.title.size() <= 140
+        && request.resource.data.description is string
+        && request.resource.data.description.size() >= 20
+        && request.resource.data.description.size() <= 1500
+        && request.resource.data.tags is list
+        && request.resource.data.tags.size() <= 5
+        && request.resource.data.answerCount == 0
+        && request.resource.data.views == 0
+        && request.resource.data.votes == 0
+        && request.resource.data.helpful == 0
+        && request.resource.data.isPinned == false;
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.author.uid == request.auth.uid);
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isAdmin() || (signedIn() && resource.data.authorId == request.auth.uid);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
